@@ -1,0 +1,47 @@
+import numpy as np 
+import pandas as pd 
+import matplotlib.pyplot as plt 
+import os 
+import kagglehub 
+from mlxtend.frequent_patterns import apriori, association_rules 
+from mlxtend.preprocessing import TransactionEncoder 
+import warnings 
+warnings.filterwarnings('ignore') 
+
+path = kagglehub.dataset_download("heeraldedhia/groceries-dataset") 
+df = pd.read_csv(os.path.join(path, "Groceries_dataset.csv")) 
+ 
+print("Dataset loaded successfully.") 
+display(df.head()) 
+
+basket = df.groupby(['Member_number', 
+'Date'])['itemDescription'].apply(list).reset_index() 
+transactions = basket['itemDescription'].tolist() 
+
+te = TransactionEncoder() 
+te_array = te.fit(transactions).transform(transactions) 
+
+df_encoded = pd.DataFrame(te_array, columns=te.columns_) 
+print("Transaction encoding complete. Shape:", df_encoded.shape) 
+
+frequent_itemsets = apriori(df_encoded, min_support=0.01, use_colnames=True) 
+ 
+print(f"Total Frequent Itemsets found: {frequent_itemsets.shape[0]}") 
+display(frequent_itemsets.sort_values(by='support', ascending=False).head(10)) 
+
+rules = association_rules(frequent_itemsets, metric="confidence", 
+min_threshold=0.1) 
+
+top_rules = rules[['antecedents', 'consequents', 'support', 'confidence', 'lift']] 
+display(top_rules.sort_values(by='lift', ascending=False).head(10)) 
+
+top_items = df['itemDescription'].value_counts().head(10) 
+ 
+plt.figure(figsize=(10, 5)) 
+top_items.plot(kind='bar', color='skyblue', edgecolor='black') 
+plt.title('Top 10 Most Purchased Items') 
+plt.xlabel('Item Description') 
+plt.ylabel('Total Count') 
+plt.xticks(rotation=45) 
+plt.grid(axis='y', linestyle='--', alpha=0.7) 
+plt.show() 
