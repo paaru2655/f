@@ -1,0 +1,71 @@
+# 1. Import libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+
+# 2. Load dataset
+data = pd.read_csv('Social_Network_Ads.csv')
+
+X = data[['Age', 'EstimatedSalary']].values
+y = data['Purchased'].values
+
+# 3. Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=0
+)
+
+# 4. Feature Scaling
+X_train = (X_train - X_train.mean(axis=0)) / X_train.std(axis=0)
+X_test = (X_test - X_test.mean(axis=0)) / X_test.std(axis=0)
+
+# 5. Sigmoid function
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+# 6. Initialize parameters
+weights = np.zeros(X_train.shape[1])
+bias = 0
+lr = 0.01
+epochs = 1000
+
+# 7. Training (Gradient Descent)
+for _ in range(epochs):
+    linear_model = np.dot(X_train, weights) + bias
+    y_pred = sigmoid(linear_model)
+
+    dw = (1/len(y_train)) * np.dot(X_train.T, (y_pred - y_train))
+    db = (1/len(y_train)) * np.sum(y_pred - y_train)
+
+    weights -= lr * dw
+    bias -= lr * db
+
+# 8. Prediction
+linear_test = np.dot(X_test, weights) + bias
+y_pred_test = sigmoid(linear_test)
+y_pred_final = [1 if i > 0.5 else 0 for i in y_pred_test]
+
+# 9. Accuracy
+accuracy = np.mean(y_pred_final == y_test)
+print("Accuracy:", accuracy)
+
+# 10. Visualization (Decision Boundary)
+plt.scatter(X_test[:, 0], X_test[:, 1], c=y_test)
+
+x_min, x_max = X_test[:, 0].min()-1, X_test[:, 0].max()+1
+y_min, y_max = X_test[:, 1].min()-1, X_test[:, 1].max()+1
+
+xx, yy = np.meshgrid(
+    np.arange(x_min, x_max, 0.1),
+    np.arange(y_min, y_max, 0.1)
+)
+
+Z = sigmoid(np.dot(np.c_[xx.ravel(), yy.ravel()], weights) + bias)
+Z = Z.reshape(xx.shape)
+
+plt.contour(xx, yy, Z, levels=[0.5])  # Decision boundary
+
+plt.title("Logistic Regression (Sigmoid)")
+plt.xlabel("Age")
+plt.ylabel("Estimated Salary")
+plt.show()
