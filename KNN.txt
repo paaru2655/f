@@ -1,0 +1,87 @@
+# Loading packages
+library(e1071)
+library(caTools)
+library(class)
+
+# Loading data
+data(iris)
+head(iris)
+
+# Splitting data into train and test data
+split = sample.split(iris$Sepal.Length, SplitRatio = 0.6)
+train_class = subset(iris, split == TRUE)
+test_class = subset(iris, split == FALSE)
+
+# Scaling Features
+train_scale = scale(train_class[, 1:4])
+test_scale = scale(test_class[, 1:4])
+
+# Building KNN Classifier for different 'k' values
+
+# k = 1
+SpeciesClassifierKNN_01 = knn(
+  train = train_scale,
+  test = test_scale,
+  cl = train_class$Species,
+  k = 1
+)
+SpeciesClassifierKNN_01
+
+# k = 3
+SpeciesClassifierKNN_03 = knn(
+  train = train_scale,
+  test = test_scale,
+  cl = train_class$Species,
+  k = 3
+)
+SpeciesClassifierKNN_03
+
+# k = 15
+SpeciesClassifierKNN_15 = knn(
+  train = train_scale,
+  test = test_scale,
+  cl = train_class$Species,
+  k = 15
+)
+SpeciesClassifierKNN_15
+
+
+
+
+
+
+# Exercise B
+# Build confusion matrix and calculate accuracy for all the models
+
+library(caret)
+
+# Building Confusion matrix for k = 1
+cm = table(test_class$Species, SpeciesClassifierKNN_01)
+cm
+
+confusionMatrix(cm)
+
+# Calculate accuracy
+error = mean(SpeciesClassifierKNN_01 != test_class$Species)
+print(paste('Accuracy k01 =', 1 - error))
+
+
+# Building Confusion matrix for k = 3
+cm = table(test_class$Species, SpeciesClassifierKNN_03)
+cm
+
+confusionMatrix(cm)
+
+# Calculate accuracy
+error = mean(SpeciesClassifierKNN_03 != test_class$Species)
+print(paste('Accuracy k03 =', 1 - error))
+
+# Building Confusion matrix for k = 15
+cm = table(test_class$Species, SpeciesClassifierKNN_15)
+cm
+
+confusionMatrix(cm)
+
+# Calculate accuracy
+error = mean(SpeciesClassifierKNN_15 != test_class$Species)
+print(paste('Accuracy k15 =', 1 - error))
