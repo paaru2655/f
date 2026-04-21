@@ -1,0 +1,45 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from hmmlearn import hmm
+import warnings
+warnings.filterwarnings('ignore')
+
+# States & observations
+hidden_states = ["Hot", "Cold"]
+observations = ["IceCream", "Coffee"]
+
+# Model
+model = hmm.MultinomialHMM(n_components=2, n_iter=50)
+model.transmat_ = np.array([[0.7, 0.3], [0.4, 0.6]])
+model.emissionprob_ = np.array([[0.8, 0.2], [0.3, 0.7]])
+model.startprob_ = np.array([0.6, 0.4])
+model.n_trials = 1
+
+# Sample data
+obs_seq, hidden_seq = model.sample(15)
+obs_seq = obs_seq.ravel()
+
+decoded_obs = [observations[i] for i in obs_seq]
+actual_hidden = [hidden_states[i] for i in hidden_seq.ravel()]
+
+# One-hot encoding (shortened)
+X_input = np.eye(len(observations))[obs_seq]
+
+# Decode
+_, pred_idx = model.decode(X_input, algorithm="viterbi")
+predicted_hidden = [hidden_states[i] for i in pred_idx]
+
+# Output
+print("HMM Parameters Defined.")
+print("Transition Matrix:\n", model.transmat_)
+print("Emission Matrix:\n", model.emissionprob_)
+print("\nGenerated Observations:", decoded_obs)
+print("Actual Hidden States:", actual_hidden)
+print("Predicted Hidden States:", predicted_hidden)
+
+# Plot
+sns.heatmap(model.transmat_, annot=True, cmap="Oranges",
+            xticklabels=hidden_states, yticklabels=hidden_states)
+plt.title("HMM Transition Matrix")
+plt.show()
