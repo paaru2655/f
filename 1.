@@ -1,0 +1,178 @@
+# MLOps Practical 1: Telecom Tower Failure Prediction
+To build, train, evaluate, and save a Machine Learning model using Python to predict telecom tower hardware failures.
+
+## 2. Software and Installations Required
+
+| Software/Library | Purpose |
+|---|---|
+| Python 3.13.9 (64-bit) | Runs the Python programs |
+| Python IDLE | Write and execute Python code |
+| pandas | Read and manipulate CSV data |
+| scikit-learn | Split data, train the model, and evaluate accuracy |
+| joblib | Save and load the trained model |
+| json | Save model accuracy in JSON format; included with Python |
+| `tower_telemetry.csv` | Dataset used for training |
+
+### Installation commands
+
+Open Command Prompt and run:
+
+```bash
+pip install pandas scikit-learn joblib
+```
+
+Verify the libraries:
+
+```bash
+python -c "import pandas, sklearn, joblib; print('All libraries are working!')"
+```
+
+Expected output:
+
+```text
+All libraries are working!
+```
+
+## 3. Project Folder Structure
+
+Create a folder named `PRAC_1` and keep the dataset and Python files inside it.
+
+```text
+PRAC_1/
+├── tower_telemetry.csv
+├── train.py
+├── predict.py
+├── telecom_tower_model.pkl
+└── metrics.json
+```
+
+The last two files are generated when `train.py` runs successfully.
+
+## 4. Procedure
+
+1. Install Python and the required libraries.
+2. Create the `PRAC_1` folder.
+3. Place `tower_telemetry.csv` inside the folder.
+4. Open Python IDLE and create `train.py`.
+5. Enter the training code and save it.
+6. Execute `train.py` by pressing F5.
+7. Check the accuracy and generated files.
+8. Create `predict.py` in the same folder.
+9. Load the saved model and provide new sensor readings.
+10. Execute `predict.py` by pressing F5 and observe the prediction.
+
+## 5. Main Code 1: `train.py`
+
+This program reads the dataset, trains a Random Forest model, evaluates it, and saves the model and accuracy.
+
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+import joblib
+import json
+
+print("Loading Dataset...")
+
+df = pd.read_csv("tower_telemetry.csv")
+
+features = [
+    "temperature_c",
+    "battery_health",
+    "Power_Consumption_W",
+    "signal_drop_rate",
+    "Fan_Speed_RPM",
+    "Humidity_Percent",
+    "Traffic_Load",
+    "Tower_Age_Years"
+]
+
+X = df[features]
+y = df["hardware_failure"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.25,
+    random_state=42
+)
+
+print("Training Model...")
+
+model = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42
+)
+
+model.fit(X_train, y_train)
+
+accuracy = model.score(X_test, y_test)
+
+print("Accuracy:", accuracy)
+
+joblib.dump(model, "telecom_tower_model.pkl")
+
+metrics = {"accuracy": accuracy}
+
+with open("metrics.json", "w") as f:
+    json.dump(metrics, f, indent=4)
+
+print("Training Completed Successfully")
+```
+
+### How to run
+
+Open Command Prompt in the project folder:
+
+```bash
+cd /d "C:\Users\LENOVO\Desktop\MLOPS\PRAC_1"
+```
+
+Run:
+
+```bash
+python train.py
+```
+
+Alternatively, open `train.py` in IDLE and press F5.
+
+### Expected output
+
+```text
+Loading Dataset...
+Training Model...
+Accuracy: [your actual accuracy]
+Training Completed Successfully
+```
+
+The actual accuracy depends on your dataset.
+
+## 6. Main Code 2: `predict.py`
+
+This program loads the saved model and predicts whether a tower may experience hardware failure.
+
+```python
+import joblib
+import pandas as pd
+
+model = joblib.load("telecom_tower_model.pkl")
+
+new_data = pd.DataFrame({
+    "temperature_c": [55],
+    "battery_health": [62],
+    "Power_Consumption_W": [2500],
+    "signal_drop_rate": [52],
+    "Fan_Speed_RPM": [3000],
+    "Humidity_Percent": [60],
+    "Traffic_Load": [3500],
+    "Tower_Age_Years": [8]
+})
+
+prediction = model.predict(new_data)
+
+if prediction[0] == 1:
+    print("Hardware Failure Predicted")
+else:
+    print("Tower is Healthy")
+```
+
